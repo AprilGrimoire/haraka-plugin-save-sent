@@ -1,0 +1,24 @@
+{
+  "name": "haraka-plugin-save-sent",
+  "version": "0.0.0",
+  "description": "Haraka mail plugin that duplicates submitted mails to sender with a special header, intended to be placed in a mailbox for sent emails by a sieve.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AprilGrimoire/haraka-plugin-save-sent.git"
+  },
+  "keywords": [
+    "haraka",
+    "plugin",
+    "save-sent"
+  ],
+  "author": "AprilGrimoire",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AprilGrimoire/haraka-plugin-save-sent/issues"
+  },
+  "homepage": "https://github.com/AprilGrimoire/haraka-plugin-save-sent#readme"
+}
