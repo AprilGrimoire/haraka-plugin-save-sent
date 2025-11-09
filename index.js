@@ -123,41 +123,44 @@ exports.duplicate_to_sender = function (next, connection) {
 
   // Currently we duplicate all outbound mails to sender.
   // This might not make sense if Haraka is working as a relay.
-  const cfg = this.cfg;
-  const outbound = this.outbound;
+  const plugin = this;
+
+  // Capture header data before async callback since connection may be null later
+  const header_items = connection.transaction.header.lines();
+  const email_shape = calculate_shape(connection.transaction.header);
+  const from = connection.transaction.header.get('From');
+  const to = connection.transaction.header.get('To');
+
   this.logdebug('Getting message stream data for duplication');
+  this.logdebug(`Original header has ${header_items.length} lines`);
+  this.logdebug(`Calculated email shape: ${email_shape}`);
+
   // Duplicate the outbound mail
   // and add headers to mark it as duplicated
   connection.transaction.message_stream.get_data(
     raw => {
-      this.logdebug(`Raw message size: ${raw.length} bytes`);
+      plugin.logdebug(`Raw message size: ${raw.length} bytes`);
       (async () => {
         const full_text = raw.toString("utf8");
-        this.logdebug(`Full text length: ${full_text.length} characters`);
+        plugin.logdebug(`Full text length: ${full_text.length} characters`);
         const separator_index = full_text.search(/\r?\n\r?\n/);
-        this.logdebug(`Header/body separator found at index: ${separator_index}`);
+        plugin.logdebug(`Header/body separator found at index: ${separator_index}`);
         const body_text = full_text.substring(separator_index).replace(/^\r?\n\r?\n/, '');
-        this.logdebug(`Body text length: ${body_text.length} characters`);
-        const header_items = connection.transaction.header.lines();
-        this.logdebug(`Original header has ${header_items.length} lines`);
-        const email_shape = calculate_shape(connection.transaction.header);
-        this.logdebug(`Calculated email shape: ${email_shape}`);
+        plugin.logdebug(`Body text length: ${body_text.length} characters`);
         const token = crypto.randomBytes(32).toString('hex');
-        this.logdebug(`Generated security token: ${token}`);
-        const redis_key = `${cfg.redis_hash_name}:${token}`;
-        this.logdebug(`Storing shape in Redis with key: ${redis_key} (expires in 60s)`);
+        plugin.logdebug(`Generated security token: ${token}`);
+        const redis_key = `${plugin.cfg.redis_hash_name}:${token}`;
+        plugin.logdebug(`Storing shape in Redis with key: ${redis_key} (expires in 60s)`);
         await server.notes.redis.set(redis_key, email_shape, { EX : 60 });
-        this.logdebug(`Adding header: ${cfg.duplicate_to_sender_flag_name}: ${cfg.duplicate_to_sender_flag_value}`);
-        header_items.push(`${cfg.duplicate_to_sender_flag_name}: ${cfg.duplicate_to_sender_flag_value}`);
-        this.logdebug(`Adding header: ${cfg.security_token_name}: ${token}`);
-        header_items.push(`${cfg.security_token_name}: ${token}`);
+        plugin.logdebug(`Adding header: ${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}`);
+        header_items.push(`${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}`);
+        plugin.logdebug(`Adding header: ${plugin.cfg.security_token_name}: ${token}`);
+        header_items.push(`${plugin.cfg.security_token_name}: ${token}`);
         const duplicate_full_text = header_items.join('\r\n') + '\r\n\r\n' + body_text;
-        this.logdebug(`Duplicate message length: ${duplicate_full_text.length} characters`);
-        const from = connection.transaction.header.get('From');
-        const to = connection.transaction.header.get('To');
-        this.logdebug(`Sending duplicate email - From: ${from}, To: ${to}`);
-        outbound.send_email(from, to, duplicate_full_text);
-        this.logdebug('Duplicate email sent to outbound queue');
+        plugin.logdebug(`Duplicate message length: ${duplicate_full_text.length} characters`);
+        plugin.logdebug(`Sending duplicate email - From: ${from}, To: ${to}`);
+        plugin.outbound.send_email(from, to, duplicate_full_text);
+        plugin.logdebug('Duplicate email sent to outbound queue');
       })();
     }
   );
