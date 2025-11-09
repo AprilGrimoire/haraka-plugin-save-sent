@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "Haraka mail plugin that duplicates submitted mails to sender with a special header, intended to be placed in a mailbox for sent emails by a sieve.",
   "main": "index.js",
+  "exports": "./index.js",
   "scripts": {
     "test": "node --test"
   },

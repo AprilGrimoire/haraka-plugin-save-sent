@@ -1,0 +1,13 @@
+{
+  // Duplicated-to-sender emails will have the following header item set:
+  "duplicate_to_sender_flag_name": "X-Save_to_mailbox",
+  "duplicate_to_sender_flag_value": "ServerSent",
+
+  // For an email to be allowed to have header return_to_sender_flag_name,
+  // this security token randomly generated for each message must present
+  // This token won't survive to delivery.
+  "security_token_name": "X-Save_to_mailbox_token",
+
+  // The name of Hash object in Redis to store data of security checking.
+  "redis_hash_name": "haraka-save-sent",
+}
