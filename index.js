@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const constants = require('haraka-constants');
 
 exports.register = function () {
   this.logdebug('=== Plugin registration starting ===');
@@ -161,11 +162,11 @@ exports.duplicate_to_sender = function (next, connection) {
         const duplicate_full_text = header_items.join('\r\n') + '\r\n\r\n' + body_text;
         plugin.logdebug(`Duplicate message length: ${duplicate_full_text.length} characters`);
         plugin.logdebug(`Sending duplicate email - From: ${from}, To: ${to}`);
-        plugin.outbound.send_email(from, from, duplicate_full_text, (err) => {
-          if (err) {
-            plugin.logerror(`Failed to send duplicate email: ${err}`);
+        plugin.outbound.send_email(from, from, duplicate_full_text, (retval, msg) => {
+          if (retval === constants.ok) {
+            plugin.loginfo(`Duplicate email queued successfully: ${msg}`);
           } else {
-            plugin.logdebug('Duplicate email sent to outbound queue');
+            plugin.logerror(`Failed to queue duplicate email (retval=${retval}): ${msg}`);
           }
         });
       })();
