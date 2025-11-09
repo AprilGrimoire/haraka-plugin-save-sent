@@ -129,8 +129,7 @@ exports.duplicate_to_sender = function (next, connection) {
   // Capture header data before async callback since connection may be null later
   const original_header_items = connection.transaction.header.lines();
   const email_shape = calculate_shape(connection.transaction.header);
-  const from = connection.transaction.header.get('From');
-  const to = connection.transaction.header.get('To');
+  const from = connection.transaction.mail_from;
 
   this.logdebug('Getting message stream data for duplication');
   this.logdebug(`Original header has ${original_header_items.length} lines`);
@@ -161,7 +160,7 @@ exports.duplicate_to_sender = function (next, connection) {
         header_items.push(`${plugin.cfg.security_token_name}: ${token}`);
         const duplicate_full_text = header_items.join('\r\n') + '\r\n\r\n' + body_text;
         plugin.logdebug(`Duplicate message length: ${duplicate_full_text.length} characters`);
-        plugin.logdebug(`Sending duplicate email - From: ${from}, To: ${to}`);
+        plugin.logdebug(`Sending duplicate email - Address: ${from}`);
         plugin.outbound.send_email(from, from, duplicate_full_text, (retval, msg) => {
           if (retval === constants.ok) {
             plugin.loginfo(`Duplicate email queued successfully: ${msg}`);
