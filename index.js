@@ -161,8 +161,13 @@ exports.duplicate_to_sender = function (next, connection) {
         const duplicate_full_text = header_items.join('\r\n') + '\r\n\r\n' + body_text;
         plugin.logdebug(`Duplicate message length: ${duplicate_full_text.length} characters`);
         plugin.logdebug(`Sending duplicate email - From: ${from}, To: ${to}`);
-        plugin.outbound.send_email(from, to, duplicate_full_text);
-        plugin.logdebug('Duplicate email sent to outbound queue');
+        plugin.outbound.send_email(from, to, duplicate_full_text, (err) => {
+          if (err) {
+            plugin.logerror(`Failed to send duplicate email: ${err}`);
+          } else {
+            plugin.logdebug('Duplicate email sent to outbound queue');
+          }
+        });
       })();
     }
   );
