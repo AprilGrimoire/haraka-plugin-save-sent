@@ -71,7 +71,7 @@ exports.security_inspection = function (next, connection) {
 
 exports.duplicate_to_sender = function (next, connection) {
   if (!this.ensure_redis()) {
-    this.logcrit("Redis not available");
+    this.logcrit("Redis is not available!");
     return next(DENY, "Internal server error");
   }
 
