@@ -126,13 +126,13 @@ exports.duplicate_to_sender = function (next, connection) {
   const plugin = this;
 
   // Capture header data before async callback since connection may be null later
-  const header_items = connection.transaction.header.lines();
+  const original_header_items = connection.transaction.header.lines();
   const email_shape = calculate_shape(connection.transaction.header);
   const from = connection.transaction.header.get('From');
   const to = connection.transaction.header.get('To');
 
   this.logdebug('Getting message stream data for duplication');
-  this.logdebug(`Original header has ${header_items.length} lines`);
+  this.logdebug(`Original header has ${original_header_items.length} lines`);
   this.logdebug(`Calculated email shape: ${email_shape}`);
 
   // Duplicate the outbound mail
@@ -152,6 +152,8 @@ exports.duplicate_to_sender = function (next, connection) {
         const redis_key = `${plugin.cfg.redis_hash_name}:${token}`;
         plugin.logdebug(`Storing shape in Redis with key: ${redis_key} (expires in 60s)`);
         await server.notes.redis.set(redis_key, email_shape, { EX : 60 });
+        // Create a copy of header_items to avoid modifying frozen array
+        const header_items = original_header_items.slice();
         plugin.logdebug(`Adding header: ${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}`);
         header_items.push(`${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}`);
         plugin.logdebug(`Adding header: ${plugin.cfg.security_token_name}: ${token}`);
