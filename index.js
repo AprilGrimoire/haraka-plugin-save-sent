@@ -165,8 +165,10 @@ exports.duplicate_to_sender = function (next, connection) {
         plugin.logcrit('========== DUMPING DUPLICATE MESSAGE ==========');
         plugin.logcrit(duplicate_full_text);
         plugin.logcrit('========== END DUMP ==========');
+        /*
         plugin.logcrit('HALTING PROCESS NOW');
         process.exit(1);
+        */
 
         plugin.logdebug(`Sending duplicate email - Address: ${from}`);
         plugin.outbound.send_email(from, from, duplicate_full_text, (retval, msg) => {
