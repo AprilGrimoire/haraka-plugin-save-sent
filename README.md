@@ -1,4 +1,6 @@
-# WARNING! DO NOT USE! IN DEVELOPMENT!
+# WARNING
+
+Now this plugin works on my machine, but it hasn't been tested, so expect breaking bugs.
 
 # haraka-plugin-save-sent
 
