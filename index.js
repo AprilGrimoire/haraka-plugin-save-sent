@@ -46,7 +46,7 @@ exports.security_inspection = function (next, connection) {
       this.logdebug('Processing security token');
       // No more than 1 token header item should appear,
       // but in case otherwise, this would fail normally.
-      const token = header_items_security_token.join("\n");
+      const token = header_items_security_token.join('').trim();
       this.logdebug(`Security token value: ${token}`);
       const redis_key = `${this.cfg.redis_hash_name}:${token}`;
       this.logdebug(`Looking up Redis key: ${redis_key}`);
