@@ -1,3 +1,5 @@
+# WARNING! DO NOT USE! IN DEVELOPMENT!
+
 # haraka-plugin-save-sent
 
 A Haraka mail plugin that duplicates submitted emails to the sender with a special header, intended to be placed in a "Sent" mailbox by a sieve filter or similar mail filtering mechanism.
