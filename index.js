@@ -46,7 +46,7 @@ exports.security_inspection = function (next, connection) {
       this.logdebug('Processing security token');
       // No more than 1 token header item should appear,
       // but in case otherwise, this would fail normally.
-      const token = header_items_security_token.join("\n");
+      const token = header_items_security_token.join('').trim();
       this.logdebug(`Security token value: ${token}`);
       const redis_key = `${this.cfg.redis_hash_name}:${token}`;
       this.logdebug(`Looking up Redis key: ${redis_key}`);
@@ -155,11 +155,21 @@ exports.duplicate_to_sender = function (next, connection) {
         // Create a copy of header_items to avoid modifying frozen array
         const header_items = original_header_items.slice();
         plugin.logdebug(`Adding header: ${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}`);
-        header_items.push(`${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}`);
+        header_items.push(`${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}\r\n`);
         plugin.logdebug(`Adding header: ${plugin.cfg.security_token_name}: ${token}`);
-        header_items.push(`${plugin.cfg.security_token_name}: ${token}`);
-        const duplicate_full_text = header_items.join('\r\n') + '\r\n\r\n' + body_text;
+        header_items.push(`${plugin.cfg.security_token_name}: ${token}\r\n`);
+        const duplicate_full_text = header_items.join('') + '\r\n' + body_text;
         plugin.logdebug(`Duplicate message length: ${duplicate_full_text.length} characters`);
+
+        /*
+        // DEBUGGING: Dump full message and halt to prevent infinite loop
+        plugin.logcrit('========== DUMPING DUPLICATE MESSAGE ==========');
+        plugin.logcrit(duplicate_full_text);
+        plugin.logcrit('========== END DUMP ==========');
+        plugin.logcrit('HALTING PROCESS NOW');
+        process.exit(1);
+        */
+
         plugin.logdebug(`Sending duplicate email - Address: ${from}`);
         plugin.outbound.send_email(from, from, duplicate_full_text, (retval, msg) => {
           if (retval === constants.ok) {
