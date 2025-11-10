@@ -160,6 +160,14 @@ exports.duplicate_to_sender = function (next, connection) {
         header_items.push(`${plugin.cfg.security_token_name}: ${token}`);
         const duplicate_full_text = header_items.join('\r\n') + '\r\n\r\n' + body_text;
         plugin.logdebug(`Duplicate message length: ${duplicate_full_text.length} characters`);
+
+        // DEBUGGING: Dump full message and halt to prevent infinite loop
+        plugin.logcrit('========== DUMPING DUPLICATE MESSAGE ==========');
+        plugin.logcrit(duplicate_full_text);
+        plugin.logcrit('========== END DUMP ==========');
+        plugin.logcrit('HALTING PROCESS NOW');
+        process.exit(1);
+
         plugin.logdebug(`Sending duplicate email - Address: ${from}`);
         plugin.outbound.send_email(from, from, duplicate_full_text, (retval, msg) => {
           if (retval === constants.ok) {
