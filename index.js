@@ -154,11 +154,11 @@ exports.duplicate_to_sender = function (next, connection) {
         await server.notes.redis.set(redis_key, email_shape, { EX : 60 });
         // Create a copy of header_items to avoid modifying frozen array
         const header_items = original_header_items.slice();
-        plugin.logdebug(`Adding header: ${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}`);
-        header_items.push(`${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}`);
+        plugin.logdebug(`Adding header: ${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}\r\n`);
+        header_items.push(`${plugin.cfg.duplicate_to_sender_flag_name}: ${plugin.cfg.duplicate_to_sender_flag_value}\r\n`);
         plugin.logdebug(`Adding header: ${plugin.cfg.security_token_name}: ${token}`);
         header_items.push(`${plugin.cfg.security_token_name}: ${token}`);
-        const duplicate_full_text = header_items.join('\r\n') + '\r\n\r\n' + body_text;
+        const duplicate_full_text = header_items.join('') + '\r\n' + body_text;
         plugin.logdebug(`Duplicate message length: ${duplicate_full_text.length} characters`);
 
         // DEBUGGING: Dump full message and halt to prevent infinite loop
