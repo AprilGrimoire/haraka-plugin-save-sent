@@ -10,6 +10,15 @@ A Haraka mail plugin that duplicates submitted emails to the sender with a speci
 
 When users send emails through your Haraka mail server, this plugin automatically creates a duplicate of each outbound email and sends it back to the sender. The duplicate email includes special headers that can be used by sieve filters to automatically file the message into a "Sent" folder, allowing email clients to maintain a proper sent mail history.
 
+## Quirks
+
+Currently, Haraka doesn't support routing system-generated emails the same way as inbound mails. (See [issue#3496](https://github.com/haraka/Haraka/issues/3496) and [discussions#3282](https://github.com/orgs/haraka/discussions/3282).)
+
+There are two workarounds:
+
+1. According to [discussions#3282], enable `local_mx_ok`. This will lead to generated mails delivered to localhost via SMTP.
+2. According to [this comment](https://github.com/haraka/Haraka/issues/3496#issuecomment-3513393421), you can patch the code to route generated mails manually.
+
 ### How It Works
 
 1. **Security Token Generation**: When an email is queued for delivery (`queue_ok` hook), the plugin generates a random security token and stores a "shape" (some stable email headers) in Redis with a 60-second expiration.
@@ -83,6 +92,12 @@ If an email arrives with the duplicate flag header but without a valid security 
 
 - Currently duplicates **all** outbound emails to the sender. This behavior may not be suitable if Haraka is used as a relay for multiple domains.
 - Requires Redis to be available; emails will be rejected if Redis is down during processing. This might not be necessary. Initially I thought the internally generated mails would also go through the usual inbound route, however it turned out that is often (if not always) not the case. Since Haraka supports swarm mode, I'm not making the assumption that the duplicated mail wouldn't go through SMTP. **Though if you want to use this plugin and don't want to enable Redis, let me know. This plugin is currently in a very primitive state, so no-Redis support would likely be added later.**
+
+## TODO
+
+- Add option to allow this plugin to run without Redis if generated mails are directly delivered locally.
+- Use persistent storage and a worker thread to ensure that even if something goes wrong, a copy of sent emails is eventually stored.
+- Include hash of email body in the spoof-proof mechanism as well.
 
 ## License
 
